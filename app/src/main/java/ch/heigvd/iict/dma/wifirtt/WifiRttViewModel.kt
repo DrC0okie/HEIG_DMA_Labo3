@@ -32,15 +32,30 @@ class WifiRttViewModel : ViewModel() {
     val rangedAccessPoints : LiveData<List<RangedAccessPoint>> = _rangedAccessPoints.map { l -> l.toList().map { el -> el.copy() } }
 
     // CONFIGURATION MANAGEMENT
-    // TODO change map here
     private val _mapConfig = MutableLiveData(MapConfigs.b30)
     val mapConfig : LiveData<MapConfig> get() = _mapConfig
 
     fun onNewRangingResults(newResults : List<RangingResult>) {
-        //TODO we need to update encapsulated list of <RangedAccessPoint> in
-        _rangedAccessPoints
+        val updatedList = _rangedAccessPoints.value?.toMutableList() ?: mutableListOf()
 
-        // when the list is updated, we also want to update estimated location
+        for (result in newResults) {
+            if (result.status != RangingResult.STATUS_SUCCESS) continue
+
+            val existing = updatedList.find { it.bssid == result.macAddress.toString() }
+            if (existing != null) {
+                existing.update(result)
+            } else {
+                val newAp = RangedAccessPoint.newInstance(result)
+                newAp.update(result)
+                updatedList.add(newAp)
+            }
+        }
+
+        val now = System.currentTimeMillis()
+        val freshList = updatedList.filter { now - it.age <= 15_000 }
+
+        _rangedAccessPoints.postValue(freshList)
+
         estimateLocation()
     }
 

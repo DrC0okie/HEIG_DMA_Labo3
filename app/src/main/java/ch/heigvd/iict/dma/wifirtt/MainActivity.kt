@@ -4,10 +4,14 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.wifi.WifiManager
+import android.net.wifi.rtt.RangingRequest
+import android.net.wifi.rtt.RangingResult
 import android.net.wifi.rtt.WifiRttManager
+import android.net.wifi.rtt.RangingResultCallback
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -84,13 +88,40 @@ class MainActivity : AppCompatActivity() {
             if(isEnabled == null) return@observe
             if(isEnabled) {
                 rangingTask?.cancel() // we cancel eventual previous task
-                rangingTask =
-                    timer("ranging_timer", daemon = false, initialDelay = 500, period = 250) {
-                        //TODO implement ranging with
-                        wifiRttManager
-                        // valid ranging results should be pass to viewmodel using
-                        wifiRttViewModel.onNewRangingResults(emptyList())
+                rangingTask = timer("ranging_timer", daemon = false, initialDelay = 500, period = 250) {
+                    val fineLocationGranted = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    val nearbyDevicesGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                        checkSelfPermission(Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED
+                    else true
+
+                    if (!fineLocationGranted || !nearbyDevicesGranted) {
+                        Log.w(TAG, "Permissions not granted")
+                        return@timer
                     }
+
+                    val scanResults = wifiManager.scanResults
+                    val responders = scanResults.filter { it.is80211mcResponder }
+
+                    if (responders.isEmpty()) return@timer
+
+                    val request = RangingRequest.Builder().apply {
+                        responders.forEach { addAccessPoint(it) }
+                    }.build()
+
+                    wifiRttManager.startRanging(request, mainExecutor, object : RangingResultCallback() {
+                        override fun onRangingResults(results: List<RangingResult>) {
+                            wifiRttViewModel.onNewRangingResults(results)
+                        }
+
+                        override fun onRangingFailure(code: Int) {
+                            runOnUiThread {
+                                Log.w(TAG, "Ranging failed: $code")
+                            }
+                        }
+                    })
+
+                }
+
             }
         }
     }
