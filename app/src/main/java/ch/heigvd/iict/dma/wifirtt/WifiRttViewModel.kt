@@ -82,46 +82,54 @@ class WifiRttViewModel : ViewModel() {
         val apLocations = mapConfig.value?.accessPointKnownLocations ?: return
         val apList = _rangedAccessPoints.value ?: return
 
-        // Only keep the 3 APs in the room
+        // get Aps
         val selectedAps = apList.filter { apLocations.containsKey(it.bssid) }
 
-        if (selectedAps.size < 3) return // not enough APs to trilaterate
+        val use3D = apLocations.values.any { it.heightMm != 0 }
 
-        // Prepare data for trilateration
+        val minApCount = if (use3D) 4 else 3
+        if (selectedAps.size < minApCount) return
+
         val positions = mutableListOf<DoubleArray>()
         val distances = mutableListOf<Double>()
 
         for (ap in selectedAps) {
             val loc = apLocations[ap.bssid] ?: continue
-            positions.add(doubleArrayOf(loc.xMm.toDouble(), loc.yMm.toDouble()))
+            positions.add(
+                if (use3D)
+                    doubleArrayOf(loc.xMm.toDouble(), loc.yMm.toDouble(), loc.heightMm.toDouble())
+                else
+                    doubleArrayOf(loc.xMm.toDouble(), loc.yMm.toDouble())
+            )
             distances.add(ap.distanceMm)
         }
 
         try {
-            // Create and solve the trilateration system
             val solver = NonLinearLeastSquaresSolver(
                 TrilaterationFunction(positions.toTypedArray(), distances.toDoubleArray()),
                 LevenbergMarquardtOptimizer()
             )
-
             val solution = solver.solve()
+            val point = solution.point.toArray()
 
-            // Estimates position
-            val estimatedX = solution.point.getEntry(0)
-            val estimatedY = solution.point.getEntry(1)
-            val estimatedZ = 0.0
+            val estimatedX = point[0]
+            val estimatedY = point[1]
+            val estimatedZ = if (use3D && point.size > 2) point[2] else 0.0
 
             _estimatedPosition.postValue(doubleArrayOf(estimatedX, estimatedY, estimatedZ))
 
-            // update distances for display
+
             val distMap = selectedAps.associate { it.bssid to it.distanceMm }.toMutableMap()
             _estimatedDistances.postValue(distMap)
 
         } catch (e: Exception) {
-            Log.e(TAG, "trilateration error", e)
+            Log.e(TAG, "Erreur lors de la trilatération 3D", e)
         }
     }
 
+    fun setMapConfig(config: MapConfig) {
+        _mapConfig.postValue(config)
+    }
 
     companion object {
         private val TAG = WifiRttViewModel::class.simpleName

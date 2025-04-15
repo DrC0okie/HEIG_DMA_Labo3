@@ -35,4 +35,30 @@
         app:layout_constraintStart_toStartOf="parent"
         android:text="@string/debug"/>
 
+    <RadioGroup
+        android:id="@+id/map_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="40dp"
+        app:layout_constraintStart_toEndOf="@id/map_debug"
+        app:layout_constraintTop_toTopOf="@id/map_debug"
+        app:layout_constraintBottom_toBottomOf="@id/map_debug"
+        android:layout_margin="8dp">
+
+        <RadioButton
+            android:id="@+id/radio_b30"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B30 (2D)"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/radio_level_b"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Étage B (3D)" />
+    </RadioGroup>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

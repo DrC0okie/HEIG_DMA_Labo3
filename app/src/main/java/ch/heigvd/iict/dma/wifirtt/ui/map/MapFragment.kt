@@ -8,6 +8,7 @@ import android.widget.CompoundButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import ch.heigvd.iict.dma.wifirtt.WifiRttViewModel
+import ch.heigvd.iict.dma.wifirtt.config.MapConfigs
 import ch.heigvd.iict.dma.wifirtt.databinding.FragmentMapBinding
 
 class MapFragment : Fragment() {
@@ -15,9 +16,13 @@ class MapFragment : Fragment() {
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    private val wifiRttViewModel : WifiRttViewModel by activityViewModels()
+    private val wifiRttViewModel: WifiRttViewModel by activityViewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentMapBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -26,15 +31,21 @@ class MapFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // init map
-        wifiRttViewModel.mapConfig.observe(viewLifecycleOwner) {map ->
+        wifiRttViewModel.mapConfig.observe(viewLifecycleOwner) { map ->
             binding.map.setImageResource(map.imageRes)
             binding.mapOverlay.setMapDimension(map.mapHeightMm, map.mapWidthMm)
             binding.mapOverlay.setAccessPoints(map.accessPointKnownLocations)
+
+            // toggle synchro
+            when (map) {
+                MapConfigs.b30 -> binding.mapToggle.check(binding.radioB30.id)
+                MapConfigs.levelB -> binding.mapToggle.check(binding.radioLevelB.id)
+            }
         }
 
         // we observe position
         wifiRttViewModel.estimatedPosition.observe(viewLifecycleOwner) { position ->
-            if(position == null) return@observe
+            if (position == null) return@observe
             binding.mapOverlay.estimatedPosition = position
         }
 
@@ -48,7 +59,15 @@ class MapFragment : Fragment() {
             binding.mapOverlay.debug = debug
         }
 
-        binding.mapDebug.setOnCheckedChangeListener{ _: CompoundButton, b: Boolean ->
+        binding.mapToggle.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                binding.radioB30.id -> wifiRttViewModel.setMapConfig(MapConfigs.b30)
+                binding.radioLevelB.id -> wifiRttViewModel.setMapConfig(MapConfigs.levelB)
+            }
+        }
+
+
+        binding.mapDebug.setOnCheckedChangeListener { _: CompoundButton, b: Boolean ->
             wifiRttViewModel.debugMode(b)
         }
 
