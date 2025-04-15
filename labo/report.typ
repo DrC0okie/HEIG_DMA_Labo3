@@ -47,3 +47,11 @@ On peut en dire que la position obtenue est assez précise, mais pas parfaite. E
 == 2.2
 _Pouvons-nous déterminer la hauteur du mobile par trilatération ? Si oui qu'est-ce que cela implique ? La configuration pour l'étage B contient la hauteur des AP et vous permet donc de faire des tests._
 
+Oui, il est possible de déterminer la hauteur (coordonnée Z) d’un mobile en utilisant la trilatération, à condition d’avoir suffisamment d’informations en trois dimensions.
+
+Dans un espace 2D, trois APs suffisent pour estimer la position (X, Y) du mobile. Mais dès qu’on souhaite ajouter la dimension verticale (Z), il est nécessaire d’utiliser les coordonnées complètes  des points d’accès (X, Y, Z) et de disposer d’au moins quatre points d’accès placés à des hauteurs différentes pour permettre une estimation fiable.
+
+Cela implique que chaque point d’accès doit être précisément localisé, y compris en hauteur. La qualité de l’estimation dépendra également de la disposition des APs dans l’espace : plus ils sont répartis sur des hauteurs variées et dans différentes directions, plus la trilatération en 3D sera précise.
+
+Dans le cas de la configuration du bâtiment B, la hauteur des points d’accès est connue, ce qui rend techniquement possible l’estimation de la position 3D complète (X, Y, Z) du mobile. Il est donc envisageable de mettre en place une trilatération tridimensionnelle pour localiser un utilisateur non seulement en surface, mais aussi en hauteur.
+
