@@ -42,8 +42,7 @@ Comme les variations observées pour un AP à une distance de 3m varie entre 3m 
 == 2.1
 _Nous avons également placé des AP à différents endroits de l'étage B. La carte et la position de ces huit AP sont fournies dans le code. Pour activer une localisation sur l'étage B, il suffit de modifier la configuration placée dans la `LiveData_mapConfig` dans le `WifiRttViewModel`. Que pouvons-nous dire de la position obtenue en se promenant dans les couloirs de l'étage ? Doit-on tenir compte de tous les AP pour calculer la position ?_
 
-
-
+On peut en dire que la position obtenue est assez précise, mais pas parfaite. En effet, la position est souvent décalée par rapport à la position réelle. De plus, il y a des endroits où la position est complètement fausse. Il est préférable de prendre en compte au moins 4 AP pour calculer la position, car cela permet d'obtenir une estimation plutôt précise de la position réelle. Avec 3 cela devrait fonctionner, mais il y a de fortes chances que la position soit fausse. En effet, avec 3 AP on peut avoir plusieurs solutions possibles. De plus, il faut faire attention à la distance entre les AP et le smartphone. Si le smartphone est trop loin d'un AP, la position calculée sera moins précise, idem avec des obstacles, ceux-ci influencent grandement la précision. 
 
 == 2.2
 _Pouvons-nous déterminer la hauteur du mobile par trilatération ? Si oui qu'est-ce que cela implique ? La configuration pour l'étage B contient la hauteur des AP et vous permet donc de faire des tests._
