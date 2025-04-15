@@ -39,6 +39,8 @@ Comme les variations observées pour un AP à une distance de 3m varie entre 3m 
 
 = 2 Déterminer la position du smartphone
 
+Pour de faciliter le switch entre les deux configurations de localisation (la salle B30 en 2D et l'étage B en 3D), nous avons rendu la vue du fragment dynamique en ajoutant un RadioGroup qui permet de sélectionner le plan à utiliser. Lors d'un changement de sélection, la carte affichée, les APs et le mode de trilatération (2D ou 3D) sont automatiquement mis à jour grâce à l'observation de la variable `mapConfig` dans le ViewModel.
+
 == 2.1
 _Nous avons également placé des AP à différents endroits de l'étage B. La carte et la position de ces huit AP sont fournies dans le code. Pour activer une localisation sur l'étage B, il suffit de modifier la configuration placée dans la `LiveData_mapConfig` dans le `WifiRttViewModel`. Que pouvons-nous dire de la position obtenue en se promenant dans les couloirs de l'étage ? Doit-on tenir compte de tous les AP pour calculer la position ?_
 
@@ -47,11 +49,11 @@ On peut en dire que la position obtenue est assez précise, mais pas parfaite. E
 == 2.2
 _Pouvons-nous déterminer la hauteur du mobile par trilatération ? Si oui qu'est-ce que cela implique ? La configuration pour l'étage B contient la hauteur des AP et vous permet donc de faire des tests._
 
-Oui, il est possible de déterminer la hauteur (coordonnée Z) d’un mobile en utilisant la trilatération, à condition d’avoir suffisamment d’informations en trois dimensions.
+Oui, il est possible de déterminer la hauteur (coordonnée Z) d'un mobile en utilisant la trilatération, à condition d'avoir suffisamment d'informations en trois dimensions.
 
-Dans un espace 2D, trois APs suffisent pour estimer la position (X, Y) du mobile. Mais dès qu’on souhaite ajouter la dimension verticale (Z), il est nécessaire d’utiliser les coordonnées complètes  des points d’accès (X, Y, Z) et de disposer d’au moins quatre points d’accès placés à des hauteurs différentes pour permettre une estimation fiable.
+Dans un espace 2D, trois APs suffisent pour estimer la position (X, Y) du mobile. Mais dès qu'on souhaite ajouter la dimension verticale (Z), il est nécessaire d'utiliser les coordonnées complètes  des points d'accès (X, Y, Z) et de disposer d'au moins quatre points d'accès placés à des hauteurs différentes pour permettre une estimation fiable.
 
-Cela implique que chaque point d’accès doit être précisément localisé, y compris en hauteur. La qualité de l’estimation dépendra également de la disposition des APs dans l’espace : plus ils sont répartis sur des hauteurs variées et dans différentes directions, plus la trilatération en 3D sera précise.
+Cela implique que chaque point d'accès doit être précisément localisé, y compris en hauteur. La qualité de l'estimation dépendra également de la disposition des APs dans l'espace : plus ils sont répartis sur des hauteurs variées et dans différentes directions, plus la trilatération en 3D sera précise.
 
-Dans le cas de la configuration du bâtiment B, la hauteur des points d’accès est connue, ce qui rend techniquement possible l’estimation de la position 3D complète (X, Y, Z) du mobile. Il est donc envisageable de mettre en place une trilatération tridimensionnelle pour localiser un utilisateur non seulement en surface, mais aussi en hauteur.
+Dans le cas de la configuration du bâtiment B, la hauteur des points d'accès est connue, ce qui rend techniquement possible l'estimation de la position 3D complète (X, Y, Z) du mobile. Il est donc envisageable de mettre en place une trilatération tridimensionnelle pour localiser un utilisateur non seulement en surface, mais aussi en hauteur.
 
