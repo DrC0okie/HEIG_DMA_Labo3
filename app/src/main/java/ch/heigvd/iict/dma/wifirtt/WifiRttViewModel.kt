@@ -105,11 +105,10 @@ class WifiRttViewModel : ViewModel() {
             )
 
             val solution = solver.solve()
-            val point = solution.point.toArray()
 
             // Estimates position
-            val estimatedX = point[0]
-            val estimatedY = point[1]
+            val estimatedX = solution.point.getEntry(0)
+            val estimatedY = solution.point.getEntry(1)
             val estimatedZ = 0.0
 
             _estimatedPosition.postValue(doubleArrayOf(estimatedX, estimatedY, estimatedZ))
