@@ -8,6 +8,9 @@ import androidx.lifecycle.map
 import ch.heigvd.iict.dma.wifirtt.config.MapConfig
 import ch.heigvd.iict.dma.wifirtt.config.MapConfigs
 import ch.heigvd.iict.dma.wifirtt.models.RangedAccessPoint
+import com.lemmingapex.trilateration.NonLinearLeastSquaresSolver
+import com.lemmingapex.trilateration.TrilaterationFunction
+import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer
 
 class WifiRttViewModel : ViewModel() {
 
@@ -74,23 +77,67 @@ class WifiRttViewModel : ViewModel() {
         _debug.postValue(debug)
     }
 
+//    private fun estimateLocation() {
+//        // TODO we need to compute the estimated location by trilateration
+//        // the library https://github.com/lemmingapex/trilateration
+//        // will certainly helps you for the maths
+//
+//        // you should post the coordinates [x, y, height] of the estimated position in _estimatedPosition
+//        // in the second experiment, you can hardcode the height as 0.0
+//        _estimatedPosition.postValue(doubleArrayOf(2500.0, 8500.0, 0.0))
+//
+//        //as well as the distances with each access point as a MutableMap<String, Double>
+//        val estimatedDistances = mutableMapOf(
+//            "bc:df:58:f2:f7:b4" to 4500.0,
+//            "24:e5:0f:08:17:a9" to 2650.0,
+//            "24:e5:0f:08:5c:19" to 6400.0
+//        )
+//        _estimatedDistances.postValue(estimatedDistances)
+//    }
+
     private fun estimateLocation() {
-        // TODO we need to compute the estimated location by trilateration
-        // the library https://github.com/lemmingapex/trilateration
-        // will certainly helps you for the maths
+        val apLocations = mapConfig.value?.accessPointKnownLocations ?: return
+        val apList = _rangedAccessPoints.value ?: return
 
-        // you should post the coordinates [x, y, height] of the estimated position in _estimatedPosition
-        // in the second experiment, you can hardcode the height as 0.0
-        _estimatedPosition.postValue(doubleArrayOf(2500.0, 8500.0, 0.0))
+        // On garde seulement les 3 AP définis dans le plan
+        val selectedAps = apList.filter { apLocations.containsKey(it.bssid) }
 
-        //as well as the distances with each access point as a MutableMap<String, Double>
-        val estimatedDistances = mutableMapOf(
-            "bc:df:58:f2:f7:b4" to 4500.0,
-            "24:e5:0f:08:17:a9" to 2650.0,
-            "24:e5:0f:08:5c:19" to 6400.0
-        )
-        _estimatedDistances.postValue(estimatedDistances)
+        if (selectedAps.size < 3) return // Pas assez de points pour trilatération
+
+        // On construit les données de trilatération
+        val positions = mutableListOf<DoubleArray>()
+        val distances = mutableListOf<Double>()
+
+        for (ap in selectedAps) {
+            val loc = apLocations[ap.bssid] ?: continue
+            positions.add(doubleArrayOf(loc.xMm.toDouble(), loc.yMm.toDouble()))
+            distances.add(ap.distanceMm)
+        }
+
+        // Si on a toujours au moins 3 AP valides
+        if (positions.size >= 3) {
+            try {
+                val solver = NonLinearLeastSquaresSolver(
+                    TrilaterationFunction(positions.toTypedArray(), distances.toDoubleArray()),
+                    LevenbergMarquardtOptimizer()
+                )
+                val solution = solver.solve()
+
+                val x = solution.point.getEntry(0)
+                val y = solution.point.getEntry(1)
+                val z = 0.0 // hauteur ignorée dans B30
+
+                _estimatedPosition.postValue(doubleArrayOf(x, y, z))
+
+                // Poster les distances actuelles pour affichage debug
+                val distMap = selectedAps.associate { it.bssid to it.distanceMm }.toMutableMap()
+                _estimatedDistances.postValue(distMap)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
+
 
     companion object {
         private val TAG = WifiRttViewModel::class.simpleName
