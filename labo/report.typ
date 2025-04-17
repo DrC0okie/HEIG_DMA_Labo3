@@ -34,8 +34,9 @@ _Auteurs : Slimani, Steiner & Van Hove_
 == 1.1
 _Par rapport à un seul AP, que pouvez-vous dire sur la précision de la distance estimée ? Est-ce que la présence d'un obstacle (fenêtre, mur, personne) entre l'AP et le smartphone a une influence sur la précision ? Est-ce que faire une moyenne sur plusieurs mesures permet d'avoir une estimation plus fiable de la distance ?_
 
-La précision de la distance estimée varie beaucoup en fonction des obstacles entre l'AP et le smartphone. En effet, la présence d'un obstacle comme une fenêtre, un mur ou une personne peut entraîner des erreurs de mesure significatives.
-Comme les variations observées pour un AP à une distance de 3m varie entre 3m et 9m, une moyenne ne me parrait pas la meilleures des options. en effet on aurait une moyenne de 6m, ce qui n'est pas incroyable, par contre si au lieu de cela (et si le smartphone n'est pas en mouvement) on prends la plus petite des mesures. De cette manière on pourrait estimer la distance à 3m. En effet, la distance mesurée est toujours supérieure à la distance réelle, donc en prenant la plus petite des mesures on peut estimer la distance réelle.
+Concernant un seul AP, lorsqu'une ligne de vue directe est possible, les mesures de distance sont relativement précises (centimétrique). Par contre, avec des obstacles, le signal est réfléchi sur plusieurs surfaces avant d'arriver (Multipaths) et le temps de vol est plus long que prévu. La distance estimée est donc  souvent plus grande que la distance réelle.
+
+Faire une moyenne sur plusieurs mesures permet de réduire le bruit et améliorer la stabilité si les variations sont faibles. Par contre, avec des obstacles toutes les mesures sont biaisées vers le haut, donc la moyenne est aussi biaisée vers le haut. On pourrait prendre la plus petite valeur pour avoir une estimation plus proche de la distance réelle, car le chemin direct correspond généralement au plus petit temps de vol observé, mais c'est risqué si on a beaucoup de bruit, car on pourrait avoir des valeurs aberrantes.
 
 = 2 Déterminer la position du smartphone
 
@@ -55,7 +56,6 @@ Oui, il est possible de déterminer la hauteur (coordonnée Z) d'un mobile en ut
 
 Dans un espace 2D, trois APs suffisent pour estimer la position (X, Y) du mobile. Mais dès qu'on souhaite ajouter la dimension verticale (Z), il est nécessaire d'utiliser les coordonnées complètes  des points d'accès (X, Y, Z) et de disposer d'au moins quatre points d'accès placés à des hauteurs différentes pour permettre une estimation fiable.
 
-Cela implique que chaque point d'accès doit être précisément localisé, y compris en hauteur. La qualité de l'estimation dépendra également de la disposition des APs dans l'espace : plus ils sont répartis sur des hauteurs variées et dans différentes directions, plus la trilatération en 3D sera précise.
+Cela implique que chaque point d'accès doit être précisément localisé, y compris en hauteur. La qualité de l'estimation dépendra également de la disposition des APs dans l'espace : plus ils sont répartis sur des hauteurs différentes et dans différentes directions, plus la trilatération en 3D sera précise.
 
-Dans le cas de la configuration du bâtiment B, la hauteur des points d'accès est connue, ce qui rend techniquement possible l'estimation de la position 3D complète (X, Y, Z) du mobile. Il est donc envisageable de mettre en place une trilatération tridimensionnelle pour localiser un utilisateur non seulement en surface, mais aussi en hauteur.
-
+Dans le cas de la configuration du bâtiment B, la hauteur des points d'accès est connue, ce qui rend possible l'estimation de la position 3D complète (X, Y, Z). Il est donc envisageable de mettre en place une trilatération tridimensionnelle pour localiser un utilisateur non seulement en surface, mais aussi en hauteur.
