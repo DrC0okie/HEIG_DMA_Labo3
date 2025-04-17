@@ -82,9 +82,10 @@ class WifiRttViewModel : ViewModel() {
         val apLocations = mapConfig.value?.accessPointKnownLocations ?: return
         val apList = _rangedAccessPoints.value ?: return
 
-        // get Aps
+        // get filtered APs
         val selectedAps = apList.filter { apLocations.containsKey(it.bssid) }
 
+        // Choose between 2d or 3d trilateration
         val use3D = apLocations.values.any { it.heightMm != 0 }
 
         val minApCount = if (use3D) 4 else 3
@@ -93,6 +94,7 @@ class WifiRttViewModel : ViewModel() {
         val positions = mutableListOf<DoubleArray>()
         val distances = mutableListOf<Double>()
 
+        // Get distances from the selected APs
         for (ap in selectedAps) {
             val loc = apLocations[ap.bssid] ?: continue
             positions.add(
@@ -105,6 +107,7 @@ class WifiRttViewModel : ViewModel() {
         }
 
         try {
+            // Solve the x, y and z components with the trilateration solver
             val solver = NonLinearLeastSquaresSolver(
                 TrilaterationFunction(positions.toTypedArray(), distances.toDoubleArray()),
                 LevenbergMarquardtOptimizer()
@@ -123,7 +126,7 @@ class WifiRttViewModel : ViewModel() {
             _estimatedDistances.postValue(distMap)
 
         } catch (e: Exception) {
-            Log.e(TAG, "Erreur lors de la trilatération 3D", e)
+            Log.e(TAG, "Erreur lors de la trilatération", e)
         }
     }
 

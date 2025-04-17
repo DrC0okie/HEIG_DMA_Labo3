@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         wifiRttViewModel.wifiRttEnabled.observe(this) {isEnabled ->
             if(isEnabled == null) return@observe
             if(isEnabled) {
-                rangingTask?.cancel() // we cancel eventual previous task
+                rangingTask?.cancel() // Cancel eventual previous task
                 rangingTask = timer("ranging_timer", daemon = false, initialDelay = 500, period = 250) {
                     val fineLocationGranted = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     val nearbyDevicesGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
@@ -100,8 +100,9 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     val scanResults = wifiManager.scanResults
-                    val responders = scanResults.filter { it.is80211mcResponder }
 
+                    // Filter by RTT capable APs
+                    val responders = scanResults.filter { it.is80211mcResponder }
                     if (responders.isEmpty()) return@timer
 
                     val request = RangingRequest.Builder().apply {
@@ -114,9 +115,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         override fun onRangingFailure(code: Int) {
-                            runOnUiThread {
-                                Log.w(TAG, "Ranging failed: $code")
-                            }
+                            Log.w(TAG, "Ranging failed: $code")
                         }
                     })
                 }
